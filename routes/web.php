@@ -20,6 +20,7 @@ use App\Http\Controllers\chatController;
 Route::get('/', [chatController::class, 'index'])->name('user.login');
 Route::get('/create-room', [chatController::class, 'createRoom'])->name('create.room');
 Route::post('/broadcast', [chatController::class, 'broadcast'])->name('broadcast.chat');
+Route::post('/preview', [chatController::class, 'preview'])->name('broadcast.preview');
 Route::post('/chat', [chatController::class, 'chat'])->name('chat');
 Route::get('/chat', [chatController::class, 'notfound'])->name('notfound');
 Route::get('/rooms', [chatController::class,'rooms'])->name('rooms');
@@ -33,4 +34,3 @@ Route::post('/interests', [chatController::class, 'storeInterest'])->name('inter
 
 
 use Illuminate\Http\Request;
-

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Events\chat;
+use App\Events\preview;
 use App\Events\RoomJoined;
 use App\Events\RoomLeft;
 use App\Models\Room;
@@ -24,14 +25,24 @@ class chatController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    // create room
+    public function preview(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|max:255',
+            'message' => 'nullable|string|max:255',
+            'room_id' => 'required|integer|exists:rooms,id',
+        ]);
+
+        event(new preview($request->username, $request->message ?? '', $request->room_id));
+
+        return response()->json(['ok' => true]);
+    }
     public function chat(Request $request)
     {
         $validated = $request->validate([
             'username' => 'required|string|max:255',
             'room_name' => 'required|string|max:255|unique:rooms,name',
             'interests' => 'required|array|min:1',
-            'interests.*' => 'integer|exists:interests,id',
         ]);
 
         $room = Room::firstOrCreate(['name' => $validated['room_name']]);
@@ -67,33 +78,12 @@ class chatController extends Controller
     {
         return view('welcome');
     }
-
-    // public function join(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'username' => 'required|string|max:255',
-    //         'room_id' => 'required|integer|exists:rooms,id',
-    //     ]);
-
-    //     $room = Room::findOrFail($validated['room_id']);
-    //     $room->increment('members');
-
-    //     event(new RoomJoined($validated['username'], $room->id));
-
-    //     return view('chat', [
-    //         'username' => $validated['username'],
-    //         'room_name' => $room->name,
-    //         'room_id' => $room->id,
-    //     ]);
-    // }
-
-    // auto join by multiple interests
     public function joinByInterests(Request $request)
     {
         $validated = $request->validate([
             'username' => 'required|string|max:255',
             'interests' => 'required|array|min:1',
-            'interests.*' => 'integer|exists:interests,id',
+            // 'interests.*' => 'integer|exists:interests,id',
         ]);
 
         $selected = $validated['interests'];
@@ -118,9 +108,6 @@ class chatController extends Controller
             'interests' => $room->interests,
         ]);
     }
-    // app/Http/Controllers/chatController.php
-
-
 public function storeInterest(Request $request)
 {
     $validated = $request->validate([
